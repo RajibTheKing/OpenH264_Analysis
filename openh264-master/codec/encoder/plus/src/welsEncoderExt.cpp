@@ -373,7 +373,7 @@ int32_t CWelsH264SVCEncoder::Uninitialize() {
  *  SVC core encoding
  */
 int CWelsH264SVCEncoder::EncodeFrame (const SSourcePicture* kpSrcPic, SFrameBSInfo* pBsInfo) {
-    //printf("OpenH264-->> EncodeFrame\n");
+    printf("OpenH264-->> EncodeFrame\n");
   if (! (kpSrcPic && m_bInitialFlag && pBsInfo)) {
     return cmInitParaError;
   }
