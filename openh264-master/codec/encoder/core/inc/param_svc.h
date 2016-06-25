@@ -86,7 +86,12 @@ typedef struct TagDLayerParam {
   int8_t        iHighestTemporalId;
   float         fInputFrameRate;                // input frame rate
   float         fOutputFrameRate;               // output frame rate
-
+ // uint16_t          uiIdrPicId;           // IDR picture id: [0, 65535], this one is used for LTR
+  int32_t           iCodingIndex;
+  int32_t           iFrameIndex;            // count how many frames elapsed during coding context currently
+  bool              bEncCurFrmAsIdrFlag;
+  int32_t           iFrameNum;              // current frame number coding
+  int32_t           iPOC;                   // frame iPOC
 #ifdef ENABLE_FRAME_DUMP
   char          sRecFileName[MAX_FNAME_LEN];    // file to be constructed
 #endif//ENABLE_FRAME_DUMP
@@ -184,6 +189,16 @@ typedef struct TagWelsSvcCodingParam: SEncParamExt {
       const int32_t kiLesserSliceNum = ((MAX_SLICES_NUM < MAX_SLICES_NUM_TMP) ? MAX_SLICES_NUM : MAX_SLICES_NUM_TMP);
       for (int32_t idx = 0; idx < kiLesserSliceNum; idx++)
         param.sSpatialLayers[iLayer].sSliceArgument.uiSliceMbNum[idx] = 0; //default, using one row a slice if uiSliceMode is SM_RASTER_MODE
+
+      // See codec_app_def.h for more info about members bVideoSignalTypePresent through uiColorMatrix.  The default values
+      // used below preserve the previous behavior; i.e., no additional information will be written to the output file.
+      param.sSpatialLayers[iLayer].bVideoSignalTypePresent = false;			// do not write any of the following information to the header
+      param.sSpatialLayers[iLayer].uiVideoFormat = VF_UNDEF;				// undefined
+      param.sSpatialLayers[iLayer].bFullRange = false;						// analog video data range [16, 235]
+      param.sSpatialLayers[iLayer].bColorDescriptionPresent = false;		// do not write any of the following three items to the header
+      param.sSpatialLayers[iLayer].uiColorPrimaries = CP_UNDEF;				// undefined
+      param.sSpatialLayers[iLayer].uiTransferCharacteristics = TRC_UNDEF;	// undefined
+      param.sSpatialLayers[iLayer].uiColorMatrix = CM_UNDEF;				// undefined
     }
   }
 
@@ -401,6 +416,15 @@ typedef struct TagWelsSvcCodingParam: SEncParamExt {
               sizeof (SSliceArgument)) ;
 
       pSpatialLayer->iDLayerQp = pCodingParam.sSpatialLayers[iIdxSpatial].iDLayerQp;
+
+      // See codec_app_def.h and parameter_sets.h for more info about members bVideoSignalTypePresent through uiColorMatrix.
+      pSpatialLayer->bVideoSignalTypePresent =   pCodingParam.sSpatialLayers[iIdxSpatial].bVideoSignalTypePresent;
+      pSpatialLayer->uiVideoFormat =             pCodingParam.sSpatialLayers[iIdxSpatial].uiVideoFormat;
+      pSpatialLayer->bFullRange =                pCodingParam.sSpatialLayers[iIdxSpatial].bFullRange;
+      pSpatialLayer->bColorDescriptionPresent =  pCodingParam.sSpatialLayers[iIdxSpatial].bColorDescriptionPresent;
+      pSpatialLayer->uiColorPrimaries =          pCodingParam.sSpatialLayers[iIdxSpatial].uiColorPrimaries;
+      pSpatialLayer->uiTransferCharacteristics = pCodingParam.sSpatialLayers[iIdxSpatial].uiTransferCharacteristics;
+      pSpatialLayer->uiColorMatrix =             pCodingParam.sSpatialLayers[iIdxSpatial].uiColorMatrix;
 
       uiProfileIdc = (!bSimulcastAVC) ? PRO_SCALABLE_BASELINE : PRO_BASELINE;
       ++ pDlp;

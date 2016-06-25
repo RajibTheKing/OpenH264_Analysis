@@ -30,7 +30,6 @@
  *
  */
 
-
 // exp_data.c
 // export date cross various modules (.c)
 #include "md.h"

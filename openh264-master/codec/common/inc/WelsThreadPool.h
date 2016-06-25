@@ -50,11 +50,6 @@
 
 namespace WelsCommon {
 
-class IWelsThreadPoolSink {
- public:
-  virtual WELS_THREAD_ERROR_CODE OnTaskExecuted (IWelsTask* pTask) = 0;
-  virtual WELS_THREAD_ERROR_CODE OnTaskCancelled (IWelsTask* pTask) = 0;
-};
 
 class  CWelsThreadPool : public CWelsThread, public IWelsTaskThreadSink {
  public:
@@ -62,8 +57,12 @@ class  CWelsThreadPool : public CWelsThread, public IWelsTaskThreadSink {
     DEFAULT_THREAD_NUM = 4,
   };
 
-  CWelsThreadPool (IWelsThreadPoolSink* pSink = NULL, int32_t iMaxThreadNum = DEFAULT_THREAD_NUM);
-  virtual ~CWelsThreadPool();
+  static WELS_THREAD_ERROR_CODE SetThreadNum (int32_t iMaxThreadNum);
+
+  static CWelsThreadPool& AddReference();
+  void RemoveInstance();
+
+  static bool IsReferenced();
 
   //IWelsTaskThreadSink
   virtual WELS_THREAD_ERROR_CODE OnTaskStart (CWelsTaskThread* pThread,  IWelsTask* pTask);
@@ -77,8 +76,9 @@ class  CWelsThreadPool : public CWelsThread, public IWelsTaskThreadSink {
     return m_iMaxThreadNum;
   }
 
+
  protected:
-  WELS_THREAD_ERROR_CODE Init (int32_t iMaxThreadNum = DEFAULT_THREAD_NUM);
+  WELS_THREAD_ERROR_CODE Init();
   WELS_THREAD_ERROR_CODE Uninit();
 
   WELS_THREAD_ERROR_CODE CreateIdleThread();
@@ -95,11 +95,18 @@ class  CWelsThreadPool : public CWelsThread, public IWelsTaskThreadSink {
   void               ClearWaitedTasks();
 
  private:
-  int32_t   m_iMaxThreadNum;
+  CWelsThreadPool();
+  virtual ~CWelsThreadPool();
+  
+  WELS_THREAD_ERROR_CODE StopAllRunning();
+
+  static int32_t   m_iRefCount;
+  static CWelsLock m_cInitLock;
+  static int32_t   m_iMaxThreadNum;
+
   CWelsCircleQueue<IWelsTask>* m_cWaitedTasks;
   CWelsCircleQueue<CWelsTaskThread>* m_cIdleThreads;
   CWelsList<CWelsTaskThread>* m_cBusyThreads;
-  IWelsThreadPoolSink*   m_pSink;
 
   CWelsLock   m_cLockPool;
   CWelsLock   m_cLockWaitedTasks;
