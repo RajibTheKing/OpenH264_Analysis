@@ -148,6 +148,11 @@ static inline int32_t CeilLog2 (int32_t i) {
 the second path will degrades the performance
 */
 #if 1
+
+//#include <stdio.h>
+//static long long WelsMedianCounter = 0;
+//extern long long WelsMedianCounter;
+
 static inline int32_t WelsMedian (int32_t iX,  int32_t iY, int32_t iZ) {
   int32_t iMin = iX, iMax = iX;
 
@@ -160,7 +165,10 @@ static inline int32_t WelsMedian (int32_t iX,  int32_t iY, int32_t iZ) {
     iMin = iZ;
   else if (iZ > iMax)
     iMax = iZ;
-
+    
+  //WelsMedianCounter++;
+  //printf("TheKing-->> WelsMedianCounter = %lld\n", WelsMedianCounter);
+    
   return (iX + iY + iZ) - (iMin + iMax);
 }
 #else
